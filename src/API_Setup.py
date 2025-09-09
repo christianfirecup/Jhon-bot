@@ -1,45 +1,28 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from agents import Agent, Runner
+import asyncio
 
-
+"You exist to look for a context of conversation between an ai streamer streaming with the main human streamer plus"
+                 " input from chat snice we have a limited amount of tokens you need to pick the most relevant and most self identifying conversations in these files"
+                 "to upload as context for next stream youll be handed 21 files and you pick the most non essential file to pass in since well"
+                 " be always passing in 20 txt files if you conclude that all files are important "
 load_dotenv()
 OAIkey = os.getenv("OAI")
 
 
 client = OpenAI(api_key=OAIkey)
-def Create_Thread():
-    return client.beta.threads.create()
 
-def New_Message(usermessage, threadID):
-    return client.beta.threads.messages.create(
-        thread_id=threadID,
-        role="user",
-        content=usermessage
 
-    )
-def Create_Run(threadID, AssistantID):
-    return client.beta.threads.runs.create(
-        thread_id=threadID,
-        assistant_id=AssistantID,
+importantMemoryChecker = Agent(
+    name="Memory Checker",
+    instructions="You exist to look for a context of conversation between an ai streamer streaming with the main human streamer plus"
+                 " input from chat snice we have a limited amount of tokens you need to pick the most relevant and most self identifying conversations in these files"
+                 "to upload as context for next stream youll be handed 21 files and you pick the most non essential file to pass in since well"
+                 " be always passing in 20 txt files if you conclude that all files are important ",
+)
 
-    )
-def Grab_Result(threadID, runID):
-    received = False
-    while not received:
+def MemoryChecker():
 
-        # Retrieve the latest run status
-        results = client.beta.threads.runs.retrieve(
-            thread_id=threadID,
-            run_id=runID
-        )
-
-        # Check if the run is completed
-        if results.status == 'completed':
-
-            messages = client.beta.threads.messages.list(thread_id=threadID)
-            for message in messages.data:
-                role = message.role
-                content = message.content[0].text.value
-                received = True
-                return
+    return None
