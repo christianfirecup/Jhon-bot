@@ -1,36 +1,43 @@
+
 from agents import function_tool, RunContextWrapper
 from typing_extensions import Any
 from pathlib import Path
 import shutil, json
+import socket, ssl, os
+
+
+from dotenv import load_dotenv, find_dotenv, dotenv_values
+
+load_dotenv(find_dotenv())
+
+SERVER = os.getenv("SERVER")
+PORT = os.getenv("PORT")
+NICK = os.getenv("NICK")
+TOKEN = os.getenv("TOKEN")
+CHANNEL = os.getenv("CHANNEL")
+
+def _send(sock, line: str) -> None:
+    sock.sendall((line + "\r\n").encode("utf-8"))
 
 @function_tool
 def move_files(
     ctx: RunContextWrapper[Any],
     files: list[str],
     destination: str,
-    copy: bool = True,
+    do_copy: bool = True,
     overwrite: bool = False,
 ) -> str:
-    """
-    Move/copy files ONLY if there are exactly 20 unique, existing files.
-    Otherwise, do nothing (no-op) and return a JSON summary explaining why.
-    """
-    # Normalize & dedupe while preserving order
     normalized = [str(Path(p)) for p in files]
     seen, unique = set(), []
     for p in normalized:
         if p not in seen:
             seen.add(p)
             unique.append(p)
-
-    # Validate existence
     missing = [p for p in unique if not Path(p).is_file()]
     provided_count = len(files)
     unique_count = len(unique)
     valid = [p for p in unique if Path(p).is_file()]
     valid_count = len(valid)
-
-    # HARD GUARD: require exactly 20 valid files
     if not (provided_count == 20 and unique_count == 20 and valid_count == 20):
         return json.dumps({
             "noop": True,
@@ -40,13 +47,10 @@ def move_files(
             "valid_count": valid_count,
             "missing": missing,
         })
-
     dest = Path(destination)
     dest.mkdir(parents=True, exist_ok=True)
-
-    op = shutil.copy2 if copy else shutil.move
+    op = shutil.copy2 if do_copy else shutil.move
     moved = []
-
     for path in valid:
         p = Path(path)
         target = dest / p.name
@@ -57,10 +61,33 @@ def move_files(
                 i += 1
         op(str(p), str(target))
         moved.append(str(target))
-
     return json.dumps({
         "noop": False,
         "count": len(moved),
         "dest": str(dest),
         "moved": moved
     })
+
+def read_twitch_chat() -> str:
+    raw = socket.create_connection((SERVER, PORT), timeout=15)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    ctx.check_hostname = True
+    ctx.verify_mode = ssl.CERT_REQUIRED
+    ctx.load_default_certs()
+    sock = ctx.wrap_socket(raw, server_hostname=SERVER)
+    _send(sock, f"PASS {TOKEN}")
+    _send(sock, f"NICK {NICK}")
+    _send(sock, "CAP REQ :twitch.tv/commands twitch.tv/membership twitch.tv/tags")
+    _send(sock, f"JOIN #{CHANNEL}")
+    while True:
+        data = sock.recv(4096).decode("utf-8", errors="ignore")
+        if not data:
+            raise RuntimeError("Disconnected")
+        for line in data.split("\r\n"):
+            if not line:
+                continue
+            if line.startswith("PING"):
+                _send(sock, line.replace("PING", "PONG", 1))
+                continue
+            return line
