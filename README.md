@@ -6,7 +6,7 @@ AI-powered VTuber assistant that reads Twitch chat, responds, and maintains ligh
 
 ---
 
-## ✨ Features
+##  Features
 
 * **OpenAI integration** (Responses API): pluggable client ready to call models for generation.
 * **Twitch chat grabber → JSONL logs**: connects to Twitch IRC over TLS and streams raw `PRIVMSG` lines to timestamped `.jsonl` files (one file per run/day).
@@ -14,7 +14,7 @@ AI-powered VTuber assistant that reads Twitch chat, responds, and maintains ligh
 
 ---
 
-## 🔧 Requirements
+##  Requirements
 
 * Python **3.10+**
 * A valid **OpenAI API key**
@@ -23,7 +23,7 @@ AI-powered VTuber assistant that reads Twitch chat, responds, and maintains ligh
 
 ---
 
-## ⚙️ Setup
+##  Setup
 
 1. **Clone & enter project**
 
@@ -64,7 +64,7 @@ AI-powered VTuber assistant that reads Twitch chat, responds, and maintains ligh
 
 ---
 
-## ▶️ Run the chat logger
+##  Run the chat logger
 
 This starts a TLS IRC connection, joins your channel, and writes all raw chat `PRIVMSG` lines to `logs/` in JSONL.
 
@@ -85,7 +85,7 @@ python Test.py
 
 ---
 
-## 🧠 Memory Checker (experimental)
+## Memory Checker (experimental)
 
 `API_Setup.py` defines an agent named **“Memory Checker”**. It’s meant to:
 
@@ -123,7 +123,7 @@ python Test.py
 
 ---
 
-## 🧩 How it works (high level)
+## How it works (high level)
 
 * **OpenAI client:** constructed from `.env` key and ready for Responses API calls.
 * **Twitch IRC:**
@@ -138,7 +138,7 @@ python Test.py
 
 ---
 
-## 🧪 Quick verification checklist
+## Quick verification checklist
 
 * `.env` present and loaded (no missing vars).
 * `TOKEN` is a valid Twitch IRC OAuth (format usually `oauth:...`).
@@ -148,7 +148,7 @@ python Test.py
 
 ---
 
-## 🗺️ Roadmap (suggested)
+## Roadmap (suggested)
 
 * [ ] Message parsing → structured fields (user, message, badges, etc.).
 * [ ] Chat responder loop with rate limiting + safety filters.
@@ -159,7 +159,7 @@ python Test.py
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 PRs are welcome! Please:
 
@@ -169,13 +169,13 @@ PRs are welcome! Please:
 
 ---
 
-## 📝 License
+## License
 
 MIT (proposal). Update this section with your actual license choice.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 * Twitch IRC protocol and community docs.
 * OpenAI developer ecosystem.
